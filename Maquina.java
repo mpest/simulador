@@ -8,7 +8,7 @@ package estaciontrabajo;
  * <b>Nombre de la clase</b>: Maquina
  * <p>
  * <b>Descripción</b>: Clase encargada de modelar el funcionamiento de los
- * defectos y arreglos de la máquina
+ * defectos y arreglos de la máquina.
  * </p>
  * 
  * @author Mariop

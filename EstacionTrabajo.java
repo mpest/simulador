@@ -3,8 +3,8 @@
  */
 package estaciontrabajo;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Deque;
+import java.util.LinkedList;
 
 /**
  *
@@ -29,7 +29,7 @@ public class EstacionTrabajo
    * El atributo listaMaquinas de tipo List<Maquina> se emplea para almacenar la
    * lista de máquinas contenidas en la estación de trabajo en particular
    */
-  private List<Maquina> listaMaquinas = new ArrayList<>();
+  private Deque<Maquina> listaMaquinas = new LinkedList<>();
 
   /**
    * Constructor de la clase EstacionTrabajo
@@ -42,11 +42,18 @@ public class EstacionTrabajo
   }
 
   /**
-   * @return the listaMaquinas
+   * Método encargado de devolver el número de máquinas que se encuentran
+   * actualmente en la estación
+   * <p>
+   * <b>Entradas</b>:
+   * <p>
+   * <b>Salidas</b>:
+   *
+   * @return
    */
-  public List<Maquina> getListaMaquinas()
+  public int getNumeroMaquinas()
   {
-    return this.listaMaquinas;
+    return this.listaMaquinas.size();
   }
 
   /**
@@ -55,11 +62,12 @@ public class EstacionTrabajo
    * <b>Entradas</b>:
    * <p>
    * <b>Salidas</b>:
+   * 
    *
    */
   public void introducirMaquina(Maquina maquina)
   {
-    this.listaMaquinas.add(maquina);
+    this.listaMaquinas.push(maquina);
   }
 
   /**
@@ -73,8 +81,9 @@ public class EstacionTrabajo
    */
   public Maquina extraerMaquina()
   {
-    Maquina output = Util.poll(this.listaMaquinas);
-    return output;
+    Maquina maquina = this.listaMaquinas.pop();
+    maquina.estropear();
+    return maquina;
   }
 
   /**
@@ -89,20 +98,6 @@ public class EstacionTrabajo
   public int getTamanioEstacion()
   {
     return this.tamanioEstacion;
-  }
-
-  /**
-   * Método encargado de devolver si la estación tiene máquinas
-   * <p>
-   * <b>Entradas</b>:
-   * <p>
-   * <b>Salidas</b>:
-   *
-   * @return
-   */
-  public boolean tieneMaquinas()
-  {
-    return this.listaMaquinas.isEmpty() ? false : true;
   }
 
 }

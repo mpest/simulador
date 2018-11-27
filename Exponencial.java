@@ -24,6 +24,18 @@ import distribucion.interfaces.IDistribucionSalida;
 public class Exponencial implements IDistribucionSalida
 {
   /**
+   * El atributo MIN_LAMBDA de tipo double se emplea para almacenar el valor
+   * mínimo de lambda
+   */
+  private static final double MIN_LAMBDA = 0.55;
+
+  /**
+   * El atributo MAX_LAMBDA de tipo double se emplea para almacenar el valor
+   * máximo de lambda
+   */
+  private static final double MAX_LAMBDA = 1.65;
+
+  /**
    * El atributo lambda de tipo double se emplea para almacenar el parámetro
    * lambda de la distribución. Se actualiza al vuelo.
    */
@@ -34,8 +46,6 @@ public class Exponencial implements IDistribucionSalida
    * generador de números pseudoaleatorio
    */
   private Random prng;
-
-  private double tiempoAcumulado = 0;
 
   /**
    * Constructor de la clase Exponencial
@@ -54,16 +64,14 @@ public class Exponencial implements IDistribucionSalida
   @Override
   public double getSiguienteTiempo(Double tiempoSimulacion)
   {
-    if (this.lambda < 1.65)
+    if (this.lambda < MAX_LAMBDA)
     {
-      this.lambda = 1 / (0.55 + 1.1 * (this.tiempoAcumulado / 1000));
+      this.lambda = 1 / (MIN_LAMBDA + 1.1 * (tiempoSimulacion / 1000));
     } else
     {
-      this.lambda = 1.65;
+      this.lambda = MAX_LAMBDA;
     }
-    double siguienteValor = prng.nextDouble();
-    this.tiempoAcumulado += siguienteValor;
-    return (-Math.log(siguienteValor)) / (this.lambda);
+    return (-Math.log(prng.nextDouble())) / (this.lambda);
   } // fin método getSiguienteTiempo
 
   /**
@@ -81,19 +89,4 @@ public class Exponencial implements IDistribucionSalida
   {
     this.lambda = lambda;
   }
-
-  /**
-   * Método encargado de
-   * <p>
-   * <b>Entradas</b>:
-   * <p>
-   * <b>Salidas</b>:
-   *
-   * @return
-   */
-  public double getTiempoAcumulado()
-  {
-    return tiempoAcumulado;
-  }
-
 }

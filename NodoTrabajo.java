@@ -3,15 +3,16 @@
  */
 package estaciontrabajo;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Deque;
+import java.util.LinkedList;
+
+import distribucion.implementaciones.Normal;
 
 /**
  *
  * <b>Nombre de la clase</b>: NodoTrabajo
  * <p>
- * <b>Descripción</b>:
+ * <b>Descripción</b>: Clase que modela el nodo en que las máquinas trabajan
  * </p>
  * 
  * @author Mariop
@@ -20,59 +21,38 @@ import java.util.stream.Collectors;
 public class NodoTrabajo
 {
   /**
+   * El atributo distribucion de tipo Normal se emplea para almacenar la
+   * distribución sobre la cual se realizarán los cálculos
+   */
+  private Normal distribucion = new Normal();
+
+  /**
    * El atributo listaEstacionesTrabajo de tipo List<EstacionTrabajo> se emplea
    * para almacenar la lista de estaciones de trabajo
    */
-  private List<EstacionTrabajo> listaEstacionesTrabajo = new ArrayList<>();;
+  private EstacionTrabajo estacionTrabajo;
 
   /**
    * El atributo listaMaquinasEnCola de tipo List<Maquina> se emplea para
    * almacenar la lista de máquinas en la cola de la estación de trabajo
    */
-  private List<Maquina> listaMaquinasEnCola = new ArrayList<>();
+  private Deque<Maquina> listaMaquinasEnCola = new LinkedList<>();
+
+  /**
+   * El atributo siguienteRotura de tipo Double se emplea para almacenar el
+   * tiempo hasta la siguiente rotura
+   */
+  private Double siguienteRotura = this.generarTiempoRotura();
 
   /**
    * Constructor de la clase NodoTrabajo
    *
-   * @param listaEstacionesTrabajo
+   * @param estacionTrabajo
    */
-  public NodoTrabajo(List<EstacionTrabajo> listaEstacionesTrabajo)
+  public NodoTrabajo(EstacionTrabajo estacionTrabajo)
   {
-    this.listaEstacionesTrabajo = listaEstacionesTrabajo;
+    this.estacionTrabajo = estacionTrabajo;
   }
-
-  /**
-   * Método encargado de actualizar la cola de la estación
-   * <p>
-   * <b>Entradas</b>:
-   * <p>
-   * <b>Salidas</b>:
-   *
-   */
-  private void actualizarCola()
-  {
-    int flag = 0;
-    while (!this.listaMaquinasEnCola.isEmpty())
-    {
-      for (EstacionTrabajo estacion : this.listaEstacionesTrabajo)
-      {
-        if (estacion.getListaMaquinas().size() < estacion.getTamanioEstacion())
-        {
-          estacion.introducirMaquina(Util.poll(this.listaMaquinasEnCola));
-        } else
-        {
-          flag++;
-        }
-      } // fin for para recorrer todas las estaciones de trabajo
-      if (flag == this.listaEstacionesTrabajo.size())
-      {
-        return; // Tan sucio que me asquea un poco
-      } else
-      {
-        flag = 0;
-      }
-    } // fin while para intentar vaciar la lista de máquinas en cola
-  }// fin método actualizarCola
 
   /**
    * Método encargado de introducir una máquina en la cola del nodo de trabajo
@@ -85,7 +65,7 @@ public class NodoTrabajo
    */
   public void introducirMaquina(Maquina maquina)
   {
-    this.listaMaquinasEnCola.add(maquina);
+    this.listaMaquinasEnCola.push(maquina);
     this.actualizarCola();
   }
 
@@ -101,11 +81,18 @@ public class NodoTrabajo
    */
   public Maquina extraerMaquina()
   {
-    Maquina maquinaExtraida = Util.poll(this.listaEstacionesTrabajo.stream()
-            .filter(EstacionTrabajo::tieneMaquinas)
-            .map(EstacionTrabajo::getListaMaquinas).findAny().orElse(null));
+    Maquina maquinaExtraida = this.estacionTrabajo.extraerMaquina();
     this.actualizarCola();
+    this.siguienteRotura = this.generarTiempoRotura();
     return maquinaExtraida;
+  }
+
+  /**
+   * @return the siguienteRotura
+   */
+  public Double getSiguienteRotura()
+  {
+    return siguienteRotura;
   }
 
   /**
@@ -117,24 +104,45 @@ public class NodoTrabajo
    *
    * @return
    */
-  public int numeroMaquinas()
+  public int getNumeroMaquinas()
   {
-    int output = 0;
-    List<Integer> listaMaquinas = this.listaEstacionesTrabajo.stream()
-            .map(EstacionTrabajo::getListaMaquinas).map(List::size)
-            .collect(Collectors.toList());
-    for (Integer num : listaMaquinas)
-    {
-      output += num;
-    }
-    return output;
+    return this.estacionTrabajo.getNumeroMaquinas();
   }
 
   /**
-   * @return the listaEstacionesTrabajo
+   * Método encargado de actualizar la cola de la estación
+   * <p>
+   * <b>Entradas</b>:
+   * <p>
+   * <b>Salidas</b>:
+   *
    */
-  public List<EstacionTrabajo> getListaEstacionesTrabajo()
+  private void actualizarCola()
   {
-    return listaEstacionesTrabajo;
+    while (!this.listaMaquinasEnCola.isEmpty())
+    {
+      if (this.estacionTrabajo.getNumeroMaquinas() < this.estacionTrabajo
+              .getTamanioEstacion())
+      {
+        this.estacionTrabajo.introducirMaquina(this.listaMaquinasEnCola.pop());
+      } else
+      {
+        return;
+      }
+    } // fin while para intentar vaciar la lista de máquinas en cola
+  }// fin método actualizarCola
+
+  /**
+   * Método encargado de generar el siguiente tiempo de rotura de una máquina
+   * <p>
+   * <b>Entradas</b>:
+   * <p>
+   * <b>Salidas</b>:
+   *
+   * @return
+   */
+  private Double generarTiempoRotura()
+  {
+    return new Double(this.distribucion.getSiguienteTiempo(null));
   }
 }
